@@ -56,23 +56,10 @@ async function readJson(filePath, fallback) {
 }
 
 async function walkForSkillFiles(directory) {
-  const entries = await fs.readdir(directory, { withFileTypes: true });
-  const skillFiles = [];
-
-  for (const entry of entries) {
-    const fullPath = path.join(directory, entry.name);
-
-    if (entry.isDirectory()) {
-      skillFiles.push(...(await walkForSkillFiles(fullPath)));
-      continue;
-    }
-
-    if (entry.isFile() && entry.name === 'SKILL.md') {
-      skillFiles.push(fullPath);
-    }
-  }
-
-  return skillFiles;
+  const entries = await fs.readdir(directory, { withFileTypes: true, recursive: true });
+  return entries
+    .filter(e => e.isFile() && e.name === 'SKILL.md')
+    .map(e => path.join(e.parentPath || e.path, e.name));
 }
 
 async function fileExists(target) {

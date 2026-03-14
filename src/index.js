@@ -3,7 +3,7 @@ import path from 'node:path';
 import express from 'express';
 import cors from 'cors';
 import { config, validateConfig } from './config.js';
-import { countSkills } from './db.js';
+import { getStats } from './db.js';
 import { createHeaderAuth } from './middleware/auth.js';
 import { readRateLimiter, syncRateLimiter } from './middleware/rateLimit.js';
 import skillsRouter from './routes/skills.js';
@@ -40,11 +40,8 @@ const requireSyncKey = createHeaderAuth({
 });
 
 app.get('/api', (_req, res) => {
-  res.json({
-    name: 'cloud-skills-api',
-    status: 'ok',
-    skillCount: countSkills()
-  });
+  const stats = getStats();
+  res.json({ name: 'cloud-skills-api', status: 'ok', skillCount: stats.total });
 });
 
 app.use('/api/skills', readRateLimiter, requireApiKey, skillsRouter);
@@ -56,19 +53,15 @@ app.get('/', (_req, res) => {
 });
 
 app.use('/api', (_req, res) => {
-  res.status(404).json({
-    error: 'API route not found.'
-  });
+  res.status(404).json({ error: 'API route not found.' });
 });
 
 app.use((err, _req, res, _next) => {
   console.error(err);
-  res.status(500).json({
-    error: 'Internal server error.'
-  });
+  res.status(500).json({ error: 'Internal server error.' });
 });
 
 app.listen(config.port, () => {
   console.log(`Cloud Skills API listening on http://0.0.0.0:${config.port}`);
-  console.log(`Database path: ${config.dbPath}`);
+  console.log(`Data dir: ${config.dataDir}`);
 });
