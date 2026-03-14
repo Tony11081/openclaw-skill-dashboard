@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <title>Cloud Skills API</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f7;
+      --bg-tertiary: rgba(255, 255, 255, 0.8);
+      --bg-card: rgba(255, 255, 255, 0.88);
+      --text-primary: #1d1d1f;
+      --text-secondary: #6e6e73;
+      --text-tertiary: #86868b;
+      --accent: #007aff;
+      --accent-soft: rgba(0, 122, 255, 0.12);
+      --border: rgba(0, 0, 0, 0.06);
+      --glass: rgba(255, 255, 255, 0.72);
+      --shadow-sm: 0 10px 30px rgba(15, 23, 42, 0.06);
+      --shadow-md: 0 18px 50px rgba(15, 23, 42, 0.1);
+      --shadow-lg: 0 30px 70px rgba(15, 23, 42, 0.14);
+      --workspace: #007aff;
+      --bundled: #34c759;
+      --agents: #af52de;
+      --extensions: #ff9500;
+      --surface-radius: 18px;
+      --card-radius: 16px;
+      --transition: 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", sans-serif;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --bg-primary: #1c1c1e;
+      --bg-secondary: #111214;
+      --bg-tertiary: rgba(44, 44, 46, 0.8);
+      --bg-card: rgba(58, 58, 60, 0.78);
+      --text-primary: #f5f5f7;
+      --text-secondary: #b5b5bb;
+      --text-tertiary: #98989d;
+      --accent-soft: rgba(10, 132, 255, 0.18);
+      --border: rgba(255, 255, 255, 0.08);
+      --glass: rgba(28, 28, 30, 0.72);
+      --shadow-sm: 0 12px 32px rgba(0, 0, 0, 0.24);
+      --shadow-md: 0 20px 60px rgba(0, 0, 0, 0.34);
+      --shadow-lg: 0 40px 100px rgba(0, 0, 0, 0.4);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font-stack);
+      background:
+        radial-gradient(circle at top left, rgba(0, 122, 255, 0.12), transparent 30%),
+        radial-gradient(circle at top right, rgba(175, 82, 222, 0.08), transparent 24%),
+        linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-primary) 32%, var(--bg-secondary) 100%);
+      color: var(--text-primary);
+      transition: background var(--transition), color var(--transition);
+      padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      width: 24rem;
+      height: 24rem;
+      border-radius: 50%;
+      filter: blur(72px);
+      pointer-events: none;
+      opacity: 0.55;
+      z-index: -1;
+    }
+
+    body::before {
+      top: -6rem;
+      left: -8rem;
+      background: rgba(0, 122, 255, 0.18);
+    }
+
+    body::after {
+      right: -8rem;
+      bottom: -10rem;
+      background: rgba(255, 149, 0, 0.14);
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      background: none;
+      color: inherit;
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .shell {
+      width: min(1280px, calc(100vw - 1rem));
+      margin: 0 auto;
+      padding: 0.75rem 0 3rem;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0.7rem;
+      z-index: 30;
+      padding: 0.25rem 0 1rem;
+    }
+
+    .topbar-panel,
+    .panel,
+    .card,
+    .detail-sheet,
+    .mobile-nav,
+    .auth-sheet {
+      background: var(--glass);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      backdrop-filter: saturate(160%) blur(24px);
+      -webkit-backdrop-filter: saturate(160%) blur(24px);
+      transition: background var(--transition), border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .topbar-panel {
+      border-radius: 28px;
+      padding: 1rem;
+    }
+
+    .topbar-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      gap: 0.9rem;
+      align-items: flex-start;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 0.95rem;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(0, 122, 255, 0.18), rgba(175, 82, 222, 0.14));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48);
+      font-size: 1.45rem;
+      flex: none;
+    }
+
+    .brand-copy h1 {
+      margin: 0;
+      font-size: clamp(1.55rem, 4vw, 2.1rem);
+      font-weight: 650;
+      letter-spacing: -0.04em;
+    }
+
+    .brand-copy p {
+      margin: 0.35rem 0 0;
+      color: var(--text-secondary);
+      font-size: 0.98rem;
+      letter-spacing: -0.01em;
+      max-width: 44rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill,
+    .theme-toggle,
+    .action-button,
+    .source-filter,
+    .copy-button,
+    .submit-button,
+    .load-more {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.72rem 0.95rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.56);
+      color: var(--text-secondary);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
+    }
+
+    html[data-theme="dark"] .pill,
+    html[data-theme="dark"] .theme-toggle,
+    html[data-theme="dark"] .action-button,
+    html[data-theme="dark"] .source-filter,
+    html[data-theme="dark"] .copy-button,
+    html[data-theme="dark"] .submit-button,
+    html[data-theme="dark"] .load-more {
+      background: rgba(255, 255, 255, 0.04);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .theme-toggle:hover,
+    .action-button:hover,
+    .source-filter:hover,
+    .copy-button:hover,
+    .submit-button:hover,
+    .load-more:hover {
+      transform: translateY(-1px);
+      color: var(--text-primary);
+    }
+
+    .theme-toggle.active,
+    .source-filter.active,
+    .submit-button,
+    .load-more {
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-color: rgba(0, 122, 255, 0.18);
+    }
+
+    .hero-grid,
+    .content-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .hero-grid {
+      grid-template-columns: 1fr;
+      margin-top: 1rem;
+    }
+
+    .content-grid {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+
+    .panel {
+      border-radius: var(--surface-radius);
+      padding: 1rem;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.85rem;
+    }
+
+    .stat-card {
+      padding: 0.95rem;
+      border-radius: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .stat-label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-value {
+      font-size: 1.45rem;
+      font-weight: 650;
+      letter-spacing: -0.04em;
+    }
+
+    .search-panel {
+      display: grid;
+      gap: 0.9rem;
+    }
+
+    .search-shell {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.9rem 1rem;
+      border-radius: 22px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .search-shell input {
+      width: 100%;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--text-primary);
+      font-size: 1rem;
+    }
+
+    .search-shell input::placeholder {
+      color: var(--text-tertiary);
+    }
+
+    .filters {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .section-head h2,
+    .docs h2,
+    .detail-header h2,
+    .auth-sheet h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: -0.03em;
+    }
+
+    .section-head p,
+    .docs p,
+    .detail-meta,
+    .empty-state p,
+    .auth-sheet p,
+    .field-hint {
+      margin: 0;
+      color: var(--text-secondary);
+      line-height: 1.55;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(1, minmax(0, 1fr));
+      gap: 0.95rem;
+    }
+
+    .card {
+      border-radius: var(--card-radius);
+      padding: 1rem;
+      background: var(--bg-card);
+      box-shadow: var(--shadow-sm);
+      min-height: 11rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .card-top,
+    .detail-actions,
+    .meta-pills,
+    .auth-row,
+    .docs-grid {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .card-top {
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 1.08rem;
+      letter-spacing: -0.02em;
+      word-break: break-word;
+    }
+
+    .skill-description {
+      color: var(--text-secondary);
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      min-height: 4.6rem;
+    }
+
+    .source-dot {
+      width: 0.6rem;
+      height: 0.6rem;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .source-dot.workspace, .badge.workspace { background: rgba(0, 122, 255, 0.15); color: var(--workspace); }
+    .source-dot.bundled, .badge.bundled { background: rgba(52, 199, 89, 0.15); color: var(--bundled); }
+    .source-dot.agents, .badge.agents { background: rgba(175, 82, 222, 0.15); color: var(--agents); }
+    .source-dot.extensions, .badge.extensions { background: rgba(255, 149, 0, 0.15); color: var(--extensions); }
+
+    .badge,
+    .tiny-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      border-radius: 999px;
+      padding: 0.38rem 0.7rem;
+      font-size: 0.82rem;
+      border: 1px solid transparent;
+    }
+
+    .tiny-pill {
+      color: var(--text-secondary);
+      background: rgba(127, 127, 127, 0.1);
+      border-color: var(--border);
+    }
+
+    .card-footer {
+      margin-top: auto;
+      display: flex;
+      justify-content: space-between;
+      gap: 0.85rem;
+      align-items: center;
+      color: var(--text-tertiary);
+      font-size: 0.84rem;
+    }
+
+    .secondary-button {
+      padding: 0;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .sidebar {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .docs code,
+    .detail-content code,
+    .detail-content pre {
+      font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, monospace;
+      font-size: 0.9rem;
+    }
+
+    .docs pre,
+    .detail-content pre {
+      overflow-x: auto;
+      padding: 0.95rem;
+      border-radius: 14px;
+      background: rgba(15, 23, 42, 0.06);
+      border: 1px solid var(--border);
+    }
+
+    html[data-theme="dark"] .docs pre,
+    html[data-theme="dark"] .detail-content pre {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .docs-grid {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .docs-card {
+      border-radius: 1rem;
+      padding: 1rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .detail-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.36);
+      display: none;
+      z-index: 60;
+      padding: 1rem;
+      align-items: flex-end;
+      justify-content: center;
+    }
+
+    .detail-backdrop.open {
+      display: flex;
+    }
+
+    .detail-sheet {
+      width: min(980px, 100%);
+      max-height: min(92vh, 920px);
+      border-radius: 26px 26px 0 0;
+      padding: 1rem;
+      overflow: auto;
+      background: var(--bg-primary);
+    }
+
+    .detail-header {
+      display: grid;
+      gap: 0.85rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .detail-content {
+      line-height: 1.7;
+      color: var(--text-primary);
+    }
+
+    .detail-content h1,
+    .detail-content h2,
+    .detail-content h3,
+    .detail-content h4 {
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+    }
+
+    .detail-content table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+
+    .detail-content th,
+    .detail-content td {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .close-button {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 999px;
+      display: inline-grid;
+      place-items: center;
+      background: rgba(127, 127, 127, 0.12);
+      border: 1px solid var(--border);
+    }
+
+    .empty-state,
+    .auth-sheet {
+      padding: 1rem;
+      border-radius: var(--surface-radius);
+    }
+
+    .auth-sheet {
+      display: grid;
+      gap: 0.85rem;
+      position: sticky;
+      top: 6.5rem;
+    }
+
+    .field {
+      display: grid;
+      gap: 0.45rem;
+    }
+
+    .field label {
+      font-weight: 600;
+      letter-spacing: -0.01em;
+    }
+
+    .field input {
+      width: 100%;
+      padding: 0.85rem 0.95rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text-primary);
+      outline: none;
+    }
+
+    .auth-status {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+    }
+
+    .auth-status.success { color: #34c759; }
+    .auth-status.error { color: #ff453a; }
+
+    .load-more-row {
+      display: flex;
+      justify-content: center;
+      padding-top: 1rem;
+    }
+
+    .mobile-nav {
+      position: fixed;
+      left: 50%;
+      bottom: calc(0.65rem + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 40;
+      border-radius: 999px;
+      padding: 0.45rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.35rem;
+      width: min(92vw, 24rem);
+    }
+
+    .mobile-nav a {
+      border-radius: 999px;
+      padding: 0.75rem 0.65rem;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .mobile-nav a.active,
+    .mobile-nav a:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .muted {
+      color: var(--text-tertiary);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (min-width: 720px) {
+      .shell {
+        width: min(1480px, calc(100vw - 2rem));
+        padding-top: 1rem;
+      }
+
+      .hero-grid {
+        grid-template-columns: 1.1fr 0.9fr;
+      }
+
+      .content-grid {
+        grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.85fr);
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .docs-grid {
+        flex-direction: row;
+      }
+
+      .docs-card {
+        flex: 1;
+      }
+
+      .detail-backdrop {
+        align-items: center;
+      }
+
+      .detail-sheet {
+        border-radius: 28px;
+      }
+    }
+
+    @media (min-width: 1100px) {
+      .cards {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <div class="topbar-panel">
+        <div class="topbar-head">
+          <div class="brand">
+            <div class="brand-mark">☁️</div>
+            <div class="brand-copy">
+              <h1>Cloud Skills API</h1>
+              <p>Browse OpenClaw skill metadata and SKILL.md content in a clean Apple-style dashboard, then pull the same data from the REST API.</p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <div class="pill"><span>Live API</span><strong id="api-origin"></strong></div>
+            <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Toggle dark mode">🌗 Theme</button>
+            <a class="action-button" href="#docs">API Docs</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="hero-grid" id="browse">
+      <div class="panel">
+        <div class="section-head">
+          <div>
+            <h2>Spotlight Search</h2>
+            <p>Search by skill name or description, filter by source, then open full SKILL.md content in one tap.</p>
+          </div>
+        </div>
+        <div class="search-panel">
+          <div class="search-shell">
+            <span>⌘K</span>
+            <input id="search-input" type="search" placeholder="Search skills, descriptions, and keywords" autocomplete="off" />
+          </div>
+          <div class="filters" id="source-filters">
+            <button class="source-filter active" data-source="">All sources</button>
+            <button class="source-filter" data-source="workspace">Workspace</button>
+            <button class="source-filter" data-source="bundled">Bundled</button>
+            <button class="source-filter" data-source="agents">Agents</button>
+            <button class="source-filter" data-source="extensions">Extensions</button>
+          </div>
+          <p class="muted" id="search-summary">Add your API key to start browsing.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="section-head">
+          <div>
+            <h2>Quick Stats</h2>
+            <p>Counts update from the live API, so the dashboard always reflects the current cloud repository.</p>
+          </div>
+        </div>
+        <div class="stats" id="stats-grid">
+          <div class="stat-card"><span class="stat-label">Total Skills</span><span class="stat-value">—</span></div>
+          <div class="stat-card"><span class="stat-label">Workspace</span><span class="stat-value">—</span></div>
+          <div class="stat-card"><span class="stat-label">Bundled</span><span class="stat-value">—</span></div>
+          <div class="stat-card"><span class="stat-label">Last Sync</span><span class="stat-value">—</span></div>
+        </div>
+      </div>
+    </section>
+
+    <main class="content-grid" style="margin-top: 1rem;">
+      <section class="panel">
+        <div class="section-head">
+          <div>
+            <h2>Skill Library</h2>
+            <p>Responsive cards optimized for iPhone first, then expanded into a denser desktop grid.</p>
+          </div>
+          <div class="muted" id="pagination-meta">Page 1</div>
+        </div>
+
+        <div class="cards" id="skills-grid"></div>
+
+        <div class="empty-state hidden" id="empty-state">
+          <h3>No skills yet</h3>
+          <p>Run the sync script to push data into the API, or adjust your search and source filters.</p>
+        </div>
+
+        <div class="load-more-row">
+          <button type="button" class="load-more hidden" id="load-more-button">Load more skills</button>
+        </div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="auth-sheet" id="access">
+          <h2>Access</h2>
+          <p>The dashboard reads from protected endpoints. Store your API key locally in this browser and it will be sent as <code>X-API-Key</code>.</p>
+          <div class="field">
+            <label for="api-key-input">API key</label>
+            <input id="api-key-input" type="password" placeholder="Paste X-API-Key value" autocomplete="off" />
+          </div>
+          <div class="auth-row">
+            <button type="button" class="submit-button" id="save-api-key">Save key</button>
+            <button type="button" class="action-button" id="clear-api-key">Clear</button>
+          </div>
+          <p class="field-hint">Saved only in <code>localStorage</code> on this device.</p>
+          <div class="auth-status" id="auth-status">Waiting for API key.</div>
+        </section>
+
+        <section class="panel docs" id="docs">
+          <div class="section-head">
+            <div>
+              <h2>API Docs</h2>
+              <p>All read endpoints require <code>X-API-Key</code>. Sync requires <code>X-Sync-Key</code>.</p>
+            </div>
+          </div>
+
+          <div class="docs-grid">
+            <article class="docs-card">
+              <strong>Read endpoints</strong>
+              <pre><code id="docs-read-example"></code></pre>
+            </article>
+            <article class="docs-card">
+              <strong>Sync payload</strong>
+              <pre><code id="docs-sync-example"></code></pre>
+            </article>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <nav class="mobile-nav" id="mobile-nav">
+    <a href="#browse" class="active">Browse</a>
+    <a href="#docs">Docs</a>
+    <a href="#access">Access</a>
+  </nav>
+
+  <div class="detail-backdrop" id="detail-backdrop" aria-hidden="true">
+    <section class="detail-sheet" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+      <div class="detail-header">
+        <div class="card-top">
+          <div>
+            <h2 id="detail-title">Skill detail</h2>
+            <p class="detail-meta" id="detail-description">Select a skill card to read its full SKILL.md.</p>
+          </div>
+          <button type="button" class="close-button" id="close-detail" aria-label="Close detail">✕</button>
+        </div>
+        <div class="meta-pills" id="detail-pills"></div>
+        <div class="detail-actions">
+          <button type="button" class="copy-button" id="copy-skill">Copy SKILL.md</button>
+          <a class="action-button" id="open-raw" target="_blank" rel="noreferrer">Open raw</a>
+        </div>
+      </div>
+      <article class="detail-content" id="detail-content">
+        <p class="muted">No skill selected yet.</p>
+      </article>
+    </section>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script>
+    const state = {
+      apiKey: localStorage.getItem('cloud-skills-api-key') || '',
+      theme: localStorage.getItem('cloud-skills-theme') || '',
+      query: '',
+      source: '',
+      page: 1,
+      limit: 24,
+      hasMore: false,
+      isLoading: false,
+      skills: [],
+      selectedSkill: null,
+      stats: null
+    };
+
+    const elements = {
+      apiOrigin: document.getElementById('api-origin'),
+      themeToggle: document.getElementById('theme-toggle'),
+      searchInput: document.getElementById('search-input'),
+      searchSummary: document.getElementById('search-summary'),
+      sourceFilters: document.getElementById('source-filters'),
+      skillsGrid: document.getElementById('skills-grid'),
+      emptyState: document.getElementById('empty-state'),
+      loadMoreButton: document.getElementById('load-more-button'),
+      paginationMeta: document.getElementById('pagination-meta'),
+      statsGrid: document.getElementById('stats-grid'),
+      apiKeyInput: document.getElementById('api-key-input'),
+      saveApiKey: document.getElementById('save-api-key'),
+      clearApiKey: document.getElementById('clear-api-key'),
+      authStatus: document.getElementById('auth-status'),
+      docsReadExample: document.getElementById('docs-read-example'),
+      docsSyncExample: document.getElementById('docs-sync-example'),
+      detailBackdrop: document.getElementById('detail-backdrop'),
+      closeDetail: document.getElementById('close-detail'),
+      detailTitle: document.getElementById('detail-title'),
+      detailDescription: document.getElementById('detail-description'),
+      detailPills: document.getElementById('detail-pills'),
+      detailContent: document.getElementById('detail-content'),
+      copySkill: document.getElementById('copy-skill'),
+      openRaw: document.getElementById('open-raw'),
+      mobileNav: document.getElementById('mobile-nav')
+    };
+
+    const sourceOrder = ['workspace', 'bundled', 'agents', 'extensions'];
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function formatRelativeDate(value) {
+      if (!value) return 'Never';
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return 'Unknown';
+
+      const diffMs = Date.now() - date.getTime();
+      const minutes = Math.round(diffMs / 60000);
+      if (minutes < 1) return 'Just now';
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.round(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.round(hours / 24);
+      if (days < 30) return `${days}d ago`;
+      return date.toLocaleDateString();
+    }
+
+    function applyTheme(nextTheme) {
+      const resolved = nextTheme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      document.documentElement.dataset.theme = resolved;
+      state.theme = resolved;
+      localStorage.setItem('cloud-skills-theme', resolved);
+      elements.themeToggle.textContent = resolved === 'dark' ? '☀️ Light' : '🌙 Dark';
+      elements.themeToggle.classList.toggle('active', resolved === 'dark');
+    }
+
+    function setAuthStatus(message, tone = '') {
+      elements.authStatus.textContent = message;
+      elements.authStatus.className = `auth-status${tone ? ` ${tone}` : ''}`;
+    }
+
+    function getHeaders(extra = {}) {
+      const headers = { ...extra };
+      if (state.apiKey) {
+        headers['X-API-Key'] = state.apiKey;
+      }
+      return headers;
+    }
+
+    async function apiFetch(url) {
+      const response = await fetch(url, {
+        headers: getHeaders({ Accept: 'application/json' })
+      });
+
+      if (response.status === 401) {
+        setAuthStatus('API key rejected. Save a valid key and try again.', 'error');
+        throw new Error('Unauthorized');
+      }
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || `Request failed with ${response.status}`);
+      }
+
+      return response.json();
+    }
+
+    function updateDocs() {
+      const origin = window.location.origin;
+      elements.apiOrigin.textContent = origin;
+      elements.docsReadExample.textContent = [
+        `curl -H "X-API-Key: YOUR_KEY" ${origin}/api/skills?page=1&limit=24`,
+        `curl -H "X-API-Key: YOUR_KEY" ${origin}/api/skills/search?q=dashboard`,
+        `curl -H "X-API-Key: YOUR_KEY" ${origin}/api/skills/seo-audit/raw`,
+        `curl -H "X-API-Key: YOUR_KEY" ${origin}/api/stats`
+      ].join('\n');
+      elements.docsSyncExample.textContent = JSON.stringify({
+        skills: [
+          {
+            name: 'seo-audit',
+            description: 'Audit and diagnose SEO issues.',
+            source: 'agents',
+            content: '# SEO Audit\\n\\nFull SKILL.md here...',
+            frontmatter: { tags: ['seo', 'audit'] },
+            tags: ['seo', 'audit'],
+            homepage: '',
+            path: '/Users/example/.agents/skills/seo-audit',
+            updatedAt: '2026-03-15T00:00:00.000Z',
+            hash: 'sha256...'
+          }
+        ],
+        deleted: [],
+        fullSync: false
+      }, null, 2);
+    }
+
+    function renderStats(stats) {
+      const bySource = Object.fromEntries((stats?.bySource || []).map((entry) => [entry.source, entry.count]));
+      const cards = [
+        { label: 'Total Skills', value: stats?.total ?? '—' },
+        { label: 'Workspace', value: bySource.workspace ?? 0 },
+        { label: 'Bundled', value: bySource.bundled ?? 0 },
+        { label: 'Last Sync', value: formatRelativeDate(stats?.lastSyncedAt) }
+      ];
+
+      elements.statsGrid.innerHTML = cards
+        .map((card) => `
+          <div class="stat-card">
+            <span class="stat-label">${card.label}</span>
+            <span class="stat-value">${card.value}</span>
+          </div>
+        `)
+        .join('');
+    }
+
+    function renderSkills() {
+      elements.skillsGrid.innerHTML = state.skills
+        .map((skill) => {
+          const encodedName = encodeURIComponent(skill.name || '');
+          const source = escapeHtml(skill.source || 'workspace');
+          const tags = (skill.tags || [])
+            .slice(0, 3)
+            .map((tag) => `<span class="tiny-pill">${escapeHtml(tag)}</span>`)
+            .join('');
+          return `
+            <article class="card" data-skill-name="${encodedName}">
+              <div class="card-top">
+                <div>
+                  <h3>${escapeHtml(skill.name)}</h3>
+                </div>
+                <span class="badge ${source}"><span class="source-dot ${source}"></span>${source}</span>
+              </div>
+              <p class="skill-description">${escapeHtml(skill.description || 'No description yet.')}</p>
+              <div class="meta-pills">${tags || '<span class="tiny-pill">No tags</span>'}</div>
+              <div class="card-footer">
+                <span>${formatRelativeDate(skill.updatedAt)}</span>
+                <button type="button" class="secondary-button" data-open-skill="${encodedName}">Open</button>
+              </div>
+            </article>
+          `;
+        })
+        .join('');
+
+      elements.emptyState.classList.toggle('hidden', state.skills.length > 0);
+      elements.loadMoreButton.classList.toggle('hidden', !state.hasMore);
+    }
+
+    async function loadStats() {
+      if (!state.apiKey) {
+        renderStats(null);
+        return;
+      }
+
+      try {
+        const stats = await apiFetch('/api/stats');
+        state.stats = stats;
+        renderStats(stats);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    async function loadSkills({ reset = false } = {}) {
+      if (!state.apiKey || state.isLoading) {
+        return;
+      }
+
+      state.isLoading = true;
+      if (reset) {
+        state.page = 1;
+      }
+
+      const params = new URLSearchParams({
+        page: String(state.page),
+        limit: String(state.limit)
+      });
+
+      if (state.source) {
+        params.set('source', state.source);
+      }
+
+      const url = state.query.trim()
+        ? `/api/skills/search?${new URLSearchParams({ ...Object.fromEntries(params), q: state.query.trim() }).toString()}`
+        : `/api/skills?${params.toString()}`;
+
+      try {
+        const payload = await apiFetch(url);
+        state.skills = reset ? payload.data : [...state.skills, ...payload.data];
+        state.hasMore = payload.pagination.page < payload.pagination.totalPages;
+        elements.paginationMeta.textContent = `Page ${payload.pagination.page} of ${payload.pagination.totalPages} · ${payload.pagination.total} skills`;
+        elements.searchSummary.textContent = state.query
+          ? `Searching “${state.query}”${state.source ? ` in ${state.source}` : ''}`
+          : `${payload.pagination.total} skills${state.source ? ` in ${state.source}` : ''}`;
+        renderSkills();
+        setAuthStatus(`Connected. API key saved locally.`, 'success');
+      } catch (error) {
+        console.error(error);
+        if (reset) {
+          state.skills = [];
+          renderSkills();
+        }
+        if (error.message !== 'Unauthorized') {
+          setAuthStatus(error.message, 'error');
+        }
+      } finally {
+        state.isLoading = false;
+      }
+    }
+
+    async function openSkill(name) {
+      if (!state.apiKey) {
+        setAuthStatus('Add an API key first.', 'error');
+        return;
+      }
+
+      try {
+        const skill = await apiFetch(`/api/skills/${encodeURIComponent(name)}`);
+        state.selectedSkill = skill;
+        elements.detailTitle.textContent = skill.name;
+        elements.detailDescription.textContent = skill.description || 'No description available.';
+        elements.detailPills.innerHTML = [
+          `<span class="badge ${skill.source || 'workspace'}"><span class="source-dot ${skill.source || 'workspace'}"></span>${skill.source || 'workspace'}</span>`,
+          `<span class="tiny-pill">${skill.status || 'ready'}</span>`,
+          `<span class="tiny-pill">Updated ${formatRelativeDate(skill.updatedAt)}</span>`,
+          ...(skill.tags || []).map((tag) => `<span class="tiny-pill">${tag}</span>`)
+        ].join('');
+        elements.detailContent.innerHTML = marked.parse(skill.body || skill.content || '_No markdown content available yet._');
+        if (state.rawObjectUrl) {
+          URL.revokeObjectURL(state.rawObjectUrl);
+        }
+        state.rawObjectUrl = URL.createObjectURL(new Blob([skill.content || ''], { type: 'text/markdown' }));
+        elements.openRaw.href = state.rawObjectUrl;
+        elements.openRaw.download = `${skill.name || 'skill'}.md`;
+        elements.detailBackdrop.classList.add('open');
+        document.body.style.overflow = 'hidden';
+      } catch (error) {
+        console.error(error);
+        setAuthStatus(error.message, 'error');
+      }
+    }
+
+    function closeDetail() {
+      elements.detailBackdrop.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    async function copySkillMarkdown() {
+      if (!state.selectedSkill) return;
+      try {
+        await navigator.clipboard.writeText(state.selectedSkill.content || '');
+        elements.copySkill.textContent = 'Copied';
+        setTimeout(() => {
+          elements.copySkill.textContent = 'Copy SKILL.md';
+        }, 1600);
+      } catch (error) {
+        console.error(error);
+        setAuthStatus('Clipboard access failed. Copy the raw endpoint instead.', 'error');
+      }
+    }
+
+    let searchTimer = null;
+
+    function resetAndReload() {
+      state.page = 1;
+      loadSkills({ reset: true });
+    }
+
+    elements.themeToggle.addEventListener('click', () => {
+      applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+    });
+
+    elements.searchInput.addEventListener('input', (event) => {
+      state.query = event.target.value;
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => resetAndReload(), 220);
+    });
+
+    elements.sourceFilters.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-source]');
+      if (!button) return;
+
+      state.source = button.dataset.source;
+      [...elements.sourceFilters.querySelectorAll('[data-source]')].forEach((item) => {
+        item.classList.toggle('active', item === button);
+      });
+      resetAndReload();
+    });
+
+    elements.skillsGrid.addEventListener('click', (event) => {
+      const trigger = event.target.closest('[data-open-skill], [data-skill-name]');
+      if (!trigger) return;
+
+      const name = trigger.dataset.openSkill || trigger.dataset.skillName;
+      if (name) {
+        openSkill(decodeURIComponent(name));
+      }
+    });
+
+    elements.loadMoreButton.addEventListener('click', () => {
+      state.page += 1;
+      loadSkills();
+    });
+
+    elements.saveApiKey.addEventListener('click', async () => {
+      state.apiKey = elements.apiKeyInput.value.trim();
+      if (!state.apiKey) {
+        setAuthStatus('Enter an API key first.', 'error');
+        return;
+      }
+      localStorage.setItem('cloud-skills-api-key', state.apiKey);
+      await loadStats();
+      await loadSkills({ reset: true });
+    });
+
+    elements.clearApiKey.addEventListener('click', () => {
+      state.apiKey = '';
+      localStorage.removeItem('cloud-skills-api-key');
+      elements.apiKeyInput.value = '';
+      state.skills = [];
+      renderSkills();
+      renderStats(null);
+      setAuthStatus('API key cleared.', '');
+      elements.searchSummary.textContent = 'Add your API key to start browsing.';
+      elements.paginationMeta.textContent = 'Page 1';
+    });
+
+    elements.closeDetail.addEventListener('click', closeDetail);
+    elements.detailBackdrop.addEventListener('click', (event) => {
+      if (event.target === elements.detailBackdrop) {
+        closeDetail();
+      }
+    });
+    window.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        closeDetail();
+      }
+
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        elements.searchInput.focus();
+      }
+    });
+
+    elements.copySkill.addEventListener('click', copySkillMarkdown);
+
+    window.addEventListener('scroll', () => {
+      const anchors = [...elements.mobileNav.querySelectorAll('a')];
+      const sections = anchors.map((anchor) => document.querySelector(anchor.getAttribute('href'))).filter(Boolean);
+      let current = sections[0];
+      for (const section of sections) {
+        if (window.scrollY + 180 >= section.offsetTop) {
+          current = section;
+        }
+      }
+      anchors.forEach((anchor) => {
+        anchor.classList.toggle('active', current && anchor.getAttribute('href') === `#${current.id}`);
+      });
+    }, { passive: true });
+
+    window.addEventListener('beforeunload', () => {
+      if (state.rawObjectUrl) {
+        URL.revokeObjectURL(state.rawObjectUrl);
+      }
+    });
+
+    updateDocs();
+    applyTheme(state.theme);
+    elements.apiKeyInput.value = state.apiKey;
+
+    if (state.apiKey) {
+      loadStats();
+      loadSkills({ reset: true });
+    }
+  </script>
+</body>
+</html>
